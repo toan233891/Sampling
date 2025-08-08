@@ -8,7 +8,7 @@ colunms = df_Phuong2025.columns
 colunms = colunms.drop(["Mã", "Tên", "Cấp", "Mã TP", "Tỉnh / Thành Phố","Lý do không thực hiện Random Sampling"])
 
 df_sampling = df_Phuong2025.copy()
-df_sampling.set_index(["Mã TP","Tỉnh / Thành Phố","Mã","Tên","Cấp"] + colunms.tolist(), inplace=True)
+df_sampling.set_index(["Mã TP","Tỉnh / Thành Phố","Mã","Tên"], inplace=True)
 
 #Get được danh sách các mã của phường xã theo City
 Codelist = []
@@ -57,8 +57,7 @@ for i in Input_City:
         elif Input_filter == 1:
             df_filter = df_filter[df_filter["Cấp"] == "Xã"]
 
-        
-
+    
         # Lựa chọn phương pháp sampling
         Input_Method = int(input("Chọn phương pháp sampling (1: Theo mật độ, 2: Theo tỷ lệ quận gần/xa, 3: Theo Urban/ Rural): "))
 
@@ -94,18 +93,27 @@ for i in Input_City:
 
         # Sampling theo tỷ lệ quận gần/xa
         elif Input_Method == 2:
-            Input_Urban_Gan = int(input("Nhập Tỷ lệ Gần: "))
-            Input_Urban_Xa = int(input("Nhập Tỷ lệ Xa: "))
-            
-            Soluong_Urban_Gan = int(Input_Urban_Gan/100 * Input_SoPhuong)
-            Soluong_Urban_Xa = int(Input_Urban_Xa/100 * Input_SoPhuong)
+            Input_Urban_Gan = input("Nhập Tỷ lệ Gần (mặc định là 80 thì nhấn enter): ")
+            Input_Urban_Xa = input("Nhập Tỷ lệ Xa (mặc định là 20 thì nhấn enter): ")
+            if Input_Urban_Gan == "":
+                Input_Urban_Gan = 80
+            if Input_Urban_Xa == "":
+                Input_Urban_Xa = 20            
+            Soluong_Urban_Gan = int(int(Input_Urban_Gan)/100 * Input_SoPhuong)
+            Soluong_Urban_Xa = int(int(Input_Urban_Xa)/100 * Input_SoPhuong)
 
-            if Input_Urban_Gan + Input_Urban_Xa != 100:
+            if int(Input_Urban_Gan) + int(Input_Urban_Xa) != 100:
                 print("Tỷ lệ gần và xa phải nằm trong khoảng từ 0 đến 100.")
                 exit()
 
             df_filter_Gan = df_filter[df_filter["URBAN\n1: gần\n2: xa"] == 1]
+            if len(df_filter_Gan) <= 0:
+                df_filter_Gan = df_filter[df_filter["Cấp"] == "Phường"]
+            
             df_filter_Xa = df_filter[df_filter["URBAN\n1: gần\n2: xa"] == 2]
+            if len(df_filter_Xa) <= 0:
+                df_filter_Xa = df_filter[df_filter["Cấp"] == "Xã"]
+
             if len(df_filter_Gan) <= 0 and len(df_filter_Xa) <= 0:
                 df_filter_Gan = df_filter[df_filter["Cấp"] == "Phường"]
                 df_filter_Xa = df_filter[df_filter["Cấp"] == "Xã"]          
@@ -114,13 +122,13 @@ for i in Input_City:
                 print("Số lượng phường xã gần không đủ để lấy mẫu, vui lòng nhập lại.")
                 exit()
             else:
-                urban_gan = df_filter.sample(n=Soluong_Urban_Gan, random_state=42)
+                urban_gan = df_filter_Gan.sample(n=Soluong_Urban_Gan, random_state=42)
 
             if Soluong_Urban_Xa > len(df_filter_Xa):
                 print("Số lượng phường xã xa không đủ để lấy mẫu, vui lòng nhập lại.")
                 exit()
             else:
-                urban_xa = df_filter.sample(n=Soluong_Urban_Xa, random_state=42)
+                urban_xa = df_filter_Xa.sample(n=Soluong_Urban_Xa, random_state=42)
 
             df_sampled = pd.concat([urban_gan, urban_xa])
         # Sampling Theo Urban/ Rural => chỉ chạy Urban/ Sub-Urban/ Rural => Có thể chọn 1 hoặc nhiều
