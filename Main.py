@@ -5,7 +5,7 @@ df_Phuong2025 = pd.read_excel(r'Source/TinhThanhVietNam2025.xlsx',sheet_name='33
 
 
 colunms = df_Phuong2025.columns
-colunms = colunms.drop(["Mã", "Tên", "Cấp", "Mã TP", "Tỉnh / Thành Phố","Lý do không thực hiện Random Sampling"])
+colunms = colunms.drop(["Mã", "Tên", "Cấp", "Mã TP", "Tỉnh / Thành Phố"])
 
 df_sampling = df_Phuong2025.copy()
 df_sampling.set_index(["Mã TP","Tỉnh / Thành Phố","Mã","Tên"], inplace=True)
@@ -148,41 +148,41 @@ for i in Input_City:
                 else:
                     x = int(x)
                     if x == 1:
-                        df_filter_urban = df_filter[df_filter["URBAN\n1: gần\n2: xa"].isin([1, 2])]
+                        df_filter_urban = df_filter[df_filter["URBAN\n1: gần\n2: xa"].isin([1, 2])].copy()
                         input_urban = int(input("Nhập tỷ lệ Urban (%): "))
                     elif x == 2:
-                        df_filter_suburban = df_filter[df_filter["SUB-URBAN \n( < 40km)"] == 1]
+                        df_filter_suburban = df_filter[df_filter["SUB-URBAN \n( < 40km)"] == 1].copy()
                         input_suburban = int(input("Nhập tỷ lệ Sub-Urban (%): "))
                     elif x == 3:
-                        df_filter_rural = df_filter[df_filter["RURAL \n(>= 40km)"] == 1]
+                        df_filter_rural = df_filter[df_filter["RURAL \n(>= 40km)"] == 1].copy()
                         input_rural = int(input("Nhập tỷ lệ Rural (%): "))
 
             if 1 in Selected and 2 in Selected and 3 in Selected:
                 if len(df_filter_urban) <= 0 and len(df_filter_suburban) <= 0 and len(df_filter_rural) <= 0:
-                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"]
-                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"]
-                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"]    
+                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"].copy()
+                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"].copy()
+                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"].copy()    
             elif 1 in Selected and 2 in Selected:
                 if len(df_filter_urban) <= 0 and len(df_filter_suburban) <= 0:
-                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"]
-                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"]
+                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"].copy()
+                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"].copy()
             elif 1 in Selected and 3 in Selected:
                 if len(df_filter_urban) <= 0 and len(df_filter_rural) <= 0:
-                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"]
-                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"]
+                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"].copy()
+                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"].copy()
             elif 2 in Selected and 3 in Selected:
                 if len(df_filter_suburban) <= 0 and len(df_filter_rural) <= 0:
-                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"]
-                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"]
+                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"].copy()
+                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"].copy()
             elif 1 in Selected:
                 if len(df_filter_urban) <= 0:
-                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"]
+                    df_filter_urban = df_filter[df_filter["Cấp"] == "Phường"].copy()
             elif 2 in Selected:
                 if len(df_filter_suburban) <= 0:
-                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"]
+                    df_filter_suburban = df_filter[df_filter["Cấp"] == "Phường"].copy()
             elif 3 in Selected:
                 if len(df_filter_rural) <= 0:
-                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"]
+                    df_filter_rural = df_filter[df_filter["Cấp"] == "Xã"].copy()
 
             if input_urban + input_suburban + input_rural != 100:
                 print("Tỷ lệ Urban, Sub-Urban và Rural phải nằm trong khoảng từ 0 đến 100.")
@@ -198,7 +198,8 @@ for i in Input_City:
                 else:
                     df_filter_urban = df_filter_urban.sample(n=urban_count, random_state=42)
 
-                df_filter_suburban = df_filter_suburban[~df_filter_suburban["Mã"].isin(df_filter_urban["Mã"])]
+                if urban_count > 0 and suburban_count > 0 :
+                    df_filter_suburban = df_filter_suburban[~df_filter_suburban["Mã"].isin(df_filter_urban["Mã"])]
                 if suburban_count > 0 and (suburban_count > len(df_filter_suburban)):
                     print("Số lượng phường xã Sub-Urban không đủ để lấy mẫu, vui lòng nhập lại.")
                     exit()
